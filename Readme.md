@@ -1,5 +1,5 @@
 <div align=center><img src="ReadmeResources/apk.png" /></div>  
------  
+---
   
 # Android Studio
 1. 新建空工程  
