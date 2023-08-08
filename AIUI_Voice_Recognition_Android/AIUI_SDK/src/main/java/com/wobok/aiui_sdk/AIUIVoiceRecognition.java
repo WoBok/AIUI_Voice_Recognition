@@ -67,7 +67,6 @@ public class AIUIVoiceRecognition {
     public void StartRecord() {
         if (null == mAIUIAgent) {
             Log.i(TAG, "AIUIAgent为空，请先创建");
-            Log.i(TAG, "AIUIAgent为空，请先创建");
             return;
         }
 
