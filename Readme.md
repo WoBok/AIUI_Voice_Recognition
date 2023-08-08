@@ -1,4 +1,4 @@
-<img src="ReadmeResources/apk.png" />  
+<img align="middle" src="ReadmeResources/apk.png" />  
 
 # Android Studio
 1. 新建空工程  
