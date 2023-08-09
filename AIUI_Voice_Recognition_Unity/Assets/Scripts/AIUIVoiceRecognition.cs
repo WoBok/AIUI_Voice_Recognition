@@ -4,12 +4,12 @@ using UnityEngine.Android;
 
 public class AIUIVoiceRecognition
 {
-    AndroidJavaObject aiuiInstance;
-    bool InstanceIsNull
+    AndroidJavaObject m_AiuiInstance;
+    bool _InstanceIsNull
     {
         get
         {
-            if (aiuiInstance == null)
+            if (m_AiuiInstance == null)
             {
                 Debug.LogError("AIUI Instance is null !");
                 return true;
@@ -18,13 +18,16 @@ public class AIUIVoiceRecognition
                 return false;
         }
     }
+    /// <summary>
+    /// 判断是否已创建Agent
+    /// </summary>
     public bool IsCreatedAIUIAgent
     {
         get
         {
-            if (!InstanceIsNull)
+            if (!_InstanceIsNull)
             {
-                return aiuiInstance.Call<bool>("IsCreatedAIUIAgent");
+                return m_AiuiInstance.Call<bool>("isCreatedAIUIAgent");
             }
             return false;
         }
@@ -34,6 +37,7 @@ public class AIUIVoiceRecognition
     public Action OnStartRecordText;
     public Action<string> OnRecordText;
     public Action OnStopRecordText;
+
     /**************************************************************************************************************************************************/
     public AIUIVoiceRecognition()
     {
@@ -61,94 +65,103 @@ public class AIUIVoiceRecognition
             };
             Permission.RequestUserPermission(Permission.Microphone, callbacks);
         }
-        if (aiuiInstance == null)
+        if (m_AiuiInstance == null)
             Debug.LogError("AIUI init failed!");
         Debug.Log("AIUI--InitAIUI execute over");
     }
+    /// <summary>
+    /// 创建实例
+    /// </summary>
     void GenerateInstance()
     {
         AndroidJavaClass playerClass = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
         AndroidJavaObject activity = playerClass.GetStatic<AndroidJavaObject>("currentActivity");
-        aiuiInstance = new AndroidJavaObject("com.wobok.aiui_sdk.AIUIVoiceRecognition", activity);
+        m_AiuiInstance = new AndroidJavaObject("com.wobok.aiui_sdk.AIUIVoiceRecognition", activity);
 
         BindEvent();
         Debug.Log("AIUI--GenerateInstance execute over");
     }
+    /// <summary>
+    /// 绑定状态回调
+    /// </summary>
     void BindEvent()
     {
-        IRecognitionEvent recognitionEvent = new IRecognitionEvent();
-        aiuiInstance.Call("SetEventCallBack", recognitionEvent);
-        recognitionEvent.OnWakeupEvent = () => OnWakeup?.Invoke();
-        recognitionEvent.OnSleepEvent = () => OnSleep?.Invoke();
-        recognitionEvent.OnStartRecordEvent = () => OnStartRecordText?.Invoke();
-        recognitionEvent.OnRecordTextEvent = text => OnRecordText?.Invoke(text);
-        recognitionEvent.OnStopRecordEvent = () => OnStopRecordText?.Invoke();
+        IRecognitionState recognitionState = new IRecognitionState();
+        m_AiuiInstance.Call("setStateCallBack", recognitionState);
+        recognitionState.OnWakeupEvent = () => OnWakeup?.Invoke();
+        recognitionState.OnSleepEvent = () => OnSleep?.Invoke();
+        recognitionState.OnStartRecordEvent = () => OnStartRecordText?.Invoke();
+        recognitionState.OnRecordTextEvent = text => OnRecordText?.Invoke(text);
+        recognitionState.OnStopRecordEvent = () => OnStopRecordText?.Invoke();
         Debug.Log("AIUI--BindEvent execute over");
     }
     /**************************************************************************************************************************************************/
 
-
     /**************************************************************************************************************************************************/
+    /// <summary>
+    /// 使用语音识别前需先创建Agent
+    /// </summary>
     public void CreateAgent()
     {
-        if (InstanceIsNull) return;
-        aiuiInstance.Call("CreateAgent");
+        if (_InstanceIsNull) return;
+        m_AiuiInstance.Call("createAgent");
         Debug.Log("AIUI--CreateAgent execute over");
     }
     public void DestoryAgent()
     {
-        if (InstanceIsNull) return;
-        aiuiInstance.Call("DestroyAgent");
+        if (_InstanceIsNull) return;
+        m_AiuiInstance.Call("destroyAgent");
         Debug.Log("AIUI--DestoryAgent execute over");
     }
     public void StartRecord()
     {
-        if (InstanceIsNull) return;
-        aiuiInstance.Call("StartRecord");
+        if (_InstanceIsNull) return;
+        m_AiuiInstance.Call("startRecord");
         Debug.Log("AIUI--StartRecord execute over");
     }
     public void StopRecord()
     {
-        if (InstanceIsNull) return;
-        aiuiInstance.Call("StopRecord");
+        if (_InstanceIsNull) return;
+        m_AiuiInstance.Call("stopRecord");
         Debug.Log("AIUI--StopRecord execute over");
     }
     /**************************************************************************************************************************************************/
+
 }
 
-class IRecognitionEvent : AndroidJavaProxy
+class IRecognitionState : AndroidJavaProxy
 {
     public Action<string> OnRecordTextEvent;
     public Action OnStartRecordEvent;
     public Action OnStopRecordEvent;
     public Action OnWakeupEvent;
     public Action OnSleepEvent;
-    public IRecognitionEvent() : base("com.wobok.aiui_sdk.util.EventInterface")
+    public IRecognitionState() : base("com.wobok.aiui_sdk.util.RecognitionStateCallback")
     {
 
     }
-    void OnWakeup()
+    void onWakeup()
     {
         OnWakeupEvent?.Invoke();
         Debug.Log("AIUI--IRecognitionEvent--OnWakeup execute over");
     }
-    void OnSleep()
+    void onSleep()
     {
         OnSleepEvent?.Invoke();
         Debug.Log("AIUI--IRecognitionEvent--OnSleep execute over");
     }
-    void OnStartRecord()
+    void onStartRecord()
     {
         OnStartRecordEvent?.Invoke();
         Debug.Log("AIUI--IRecognitionEvent--OnStartRecord execute over");
     }
-    void OnRecordText(string text)
+    void onRecordText(string text)
     {
         OnRecordTextEvent?.Invoke(text);
         Debug.Log("AIUI--IRecognitionEvent--OnRecordTextEvent execute over");
         Debug.Log("AIUI--IRecognitionEvent--语音识别结果: " + text);
     }
-    void OnStopRecord()
+    void onStopRecord()
     {
         OnStopRecordEvent?.Invoke();
         Debug.Log("AIUI--IRecognitionEvent--OnStopRecord execute over");

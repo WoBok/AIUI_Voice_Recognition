@@ -39,11 +39,12 @@ public class DeviceUtils {
             } while (false);
             writeDeviceId(deviceId, deviceIdFile);
             return deviceId;
-        }catch (Throwable t) {
+        } catch (Throwable t) {
             t.printStackTrace();
         }
         return "";
     }
+
     private static String readDeviceId(File cacheFile) {
         try {
             RandomAccessFile f = new RandomAccessFile(cacheFile, "r");
@@ -51,11 +52,12 @@ public class DeviceUtils {
             f.readFully(bytes);
             f.close();
             return new String(bytes, Charset.defaultCharset());
-        }catch (Throwable t) {
+        } catch (Throwable t) {
             t.printStackTrace();
         }
         return "";
     }
+
     private static void writeDeviceId(String deviceId, File cacheFile) throws IOException {
         if (cacheFile.exists()) {
             cacheFile.deleteOnExit();

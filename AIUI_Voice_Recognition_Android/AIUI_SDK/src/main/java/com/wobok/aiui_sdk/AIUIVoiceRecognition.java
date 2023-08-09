@@ -13,7 +13,7 @@ import com.iflytek.aiui.AIUIListener;
 import com.iflytek.aiui.AIUIMessage;
 import com.iflytek.aiui.AIUISetting;
 import com.wobok.aiui_sdk.util.DeviceUtils;
-import com.wobok.aiui_sdk.util.EventInterface;
+import com.wobok.aiui_sdk.util.RecognitionStateCallback;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,23 +23,23 @@ import java.io.InputStream;
 
 public class AIUIVoiceRecognition {
     static String TAG = "AIUI";
-    Context context = null;
+    Context mContext = null;
     AIUIAgent mAIUIAgent = null;
     int mAIUIState = AIUIConstant.STATE_IDLE;
-    EventInterface eventInterface;
+    RecognitionStateCallback mStateCallback;
 
     public AIUIVoiceRecognition(Activity activity) {
-        context = activity;
+        mContext = activity;
     }
 
-    public void CreateAgent() {
+    public void createAgent() {
         if (null == mAIUIAgent) {
             Log.i(TAG, "创建AIUIAgent");
 
-            String deviceId = DeviceUtils.getDeviceId(context);
+            String deviceId = DeviceUtils.getDeviceId(mContext);
             Log.i(TAG, "device id : " + deviceId);
             AIUISetting.setSystemInfo(AIUIConstant.KEY_SERIAL_NUM, deviceId);
-            mAIUIAgent = AIUIAgent.createAgent(context, getAIUIParams(), mAIUIListener);
+            mAIUIAgent = AIUIAgent.createAgent(mContext, getAIUIParams(), mAIUIListener);
         }
         if (null == mAIUIAgent) {
             Log.i(TAG, "创建AIUIAgent失败");
@@ -49,11 +49,11 @@ public class AIUIVoiceRecognition {
         }
     }
 
-    public boolean IsCreatedAIUIAgent() {
+    public boolean isCreatedAIUIAgent() {
         return mAIUIAgent != null;
     }
 
-    public void DestroyAgent() {
+    public void destroyAgent() {
         if (null != mAIUIAgent) {
             mAIUIAgent.destroy();
             mAIUIAgent = null;
@@ -64,7 +64,7 @@ public class AIUIVoiceRecognition {
         }
     }
 
-    public void StartRecord() {
+    public void startRecord() {
         if (null == mAIUIAgent) {
             Log.i(TAG, "AIUIAgent为空，请先创建");
             return;
@@ -81,7 +81,7 @@ public class AIUIVoiceRecognition {
         mAIUIAgent.sendMessage(startRecord);
     }
 
-    public void StopRecord() {
+    public void stopRecord() {
         if (null == mAIUIAgent) {
             Log.i(TAG, "AIUIAgent 为空，请先创建");
             return;
@@ -113,11 +113,11 @@ public class AIUIVoiceRecognition {
 
                 case AIUIConstant.EVENT_WAKEUP:
                     Log.i(TAG, "进入识别状态");
-                    eventInterface.OnWakeup();
+                    mStateCallback.onWakeup();
                     break;
                 case AIUIConstant.EVENT_SLEEP:
                     Log.i(TAG, "进入休眠状态");
-                    eventInterface.OnSleep();
+                    mStateCallback.onSleep();
                     break;
                 case AIUIConstant.EVENT_RESULT: {
                     try {
@@ -143,8 +143,8 @@ public class AIUIVoiceRecognition {
                                 JSONObject resultJson = new JSONObject(resultStr);
                                 String recordedText = resultJson.optString("text");
                                 Log.i(TAG, "语音识别结果：" + recordedText);
-                                if (eventInterface != null)
-                                    eventInterface.OnRecordText(recordedText);
+                                if (mStateCallback != null)
+                                    mStateCallback.onRecordText(recordedText);
                                 else Log.i(TAG, "eventInterface is null !");
                             }
 
@@ -163,13 +163,13 @@ public class AIUIVoiceRecognition {
 
                 case AIUIConstant.EVENT_START_RECORD: {
                     Log.i(TAG, "已开始录音");
-                    eventInterface.OnStartRecord();
+                    mStateCallback.onStartRecord();
                 }
                 break;
 
                 case AIUIConstant.EVENT_STOP_RECORD: {
                     Log.i(TAG, "已停止录音");
-                    eventInterface.OnStopRecord();
+                    mStateCallback.onStopRecord();
                 }
                 break;
 
@@ -194,7 +194,7 @@ public class AIUIVoiceRecognition {
 
     String getAIUIParams() {
         String params = "";
-        AssetManager assetManager = context.getResources().getAssets();
+        AssetManager assetManager = mContext.getResources().getAssets();
 
         try {
             InputStream ins = assetManager.open("cfg/aiui_phone.cfg");
@@ -213,7 +213,8 @@ public class AIUIVoiceRecognition {
         return params;
     }
 
-    public void SetEventCallBack(EventInterface eventInterface) {
-        this.eventInterface = eventInterface;
+    //Unity传入RecognitionStateCallback对象
+    public void setStateCallBack(RecognitionStateCallback recognitionStateCallback) {
+        mStateCallback = recognitionStateCallback;
     }
 }

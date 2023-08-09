@@ -1,32 +1,30 @@
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
 public class VoiceRecognitionPrinter : MonoBehaviour
 {
     public TMP_Text recognitionResult;
-    AIUIVoiceRecognition voiceRecognition;
     public GameObject recordState;
     public TMP_Text readPoemResult;
+    AIUIVoiceRecognition m_VoiceRecognition;
     void Start()
     {
-        voiceRecognition = new AIUIVoiceRecognition();
-        voiceRecognition.OnRecordText = PrintRecordedText;
-        voiceRecognition.OnStartRecordText = OnStartRecord;
-        voiceRecognition.OnStopRecordText = OnStopRecord;
-        voiceRecognition.OnWakeup = OnWakeup;
-        voiceRecognition.OnSleep = OnSleep;
+        m_VoiceRecognition = new AIUIVoiceRecognition();
+        m_VoiceRecognition.OnRecordText = PrintRecordedText;
+        m_VoiceRecognition.OnStartRecordText = OnStartRecord;
+        m_VoiceRecognition.OnStopRecordText = OnStopRecord;
+        m_VoiceRecognition.OnWakeup = OnWakeup;
+        m_VoiceRecognition.OnSleep = OnSleep;
     }
     public void StartRecordText()
     {
-        if (!voiceRecognition.IsCreatedAIUIAgent)
-            voiceRecognition.CreateAgent();
-        voiceRecognition.StartRecord();
+        if (!m_VoiceRecognition.IsCreatedAIUIAgent)
+            m_VoiceRecognition.CreateAgent();
+        m_VoiceRecognition.StartRecord();
     }
     void PrintRecordedText(string text)
     {
-        this.recognitionResult.text = "识别结果：" + text;
+        recognitionResult.text = "识别结果：" + text;
         Debug.Log("AIUI--VoiceRecognitionPrinter 语音识别结果" + text);
         if (text.Replace(" ", "") == "山有木兮木有枝")
         {
